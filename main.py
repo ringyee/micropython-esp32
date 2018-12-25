@@ -9,6 +9,7 @@
 
 """
 
+import ujson
 from device.base import DynApp
 
 TestDevice = DynApp()
@@ -16,6 +17,6 @@ TestDevice.load_drive()
 addr = '3300027014'
 
 try:
-    print(TestDevice.devtypes['dtsd422'].read_dev_value(addr))
+    print(ujson.dumps(TestDevice.devtypes['DTL645_07'].read_dev_value(addr)))
 except Exception as e:
     print(e)

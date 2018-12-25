@@ -10,7 +10,6 @@
 """
 import utime
 import sys
-import re
 import os
 import machine
 sys.path.append('..')

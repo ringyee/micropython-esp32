@@ -4,7 +4,7 @@
 # Author: yjiong
 # Created Time : 2018-12-24 13:20:42
 
-# File Name: base.py
+# File Name: DTL645_07.py
 # Description:
 
 """
@@ -14,8 +14,11 @@ from device.base import DynApp
 from device.base import DevError
 
 DI = {
-      "zxygdn":   [0x00, 0x01, 0x00, 0x00],
-      "dysjk":   [0x02, 0x01, 0xFF, 0x00]
+      "TotalEnergy":   [0x00, 0x01, 0x00, 0x00],
+      "Voltage":   [0x02, 0x01, 0xFF, 0x00],
+      "Current":   [0x02, 0x02, 0xFF, 0x00],
+      # "PowerFactor":   [0x02, 0x06, 0xFF, 0x00],
+      "InstantActivePower":   [0x02, 0x03, 0xFF, 0x00],
         }
 
 
@@ -41,7 +44,7 @@ def chsum(cl):
     return chsum
 
 
-class Dtsd422(DevObj):
+class DTL645_07(DevObj):
     def __init__(self):
         self.set_config()
 
@@ -101,7 +104,7 @@ class Dtsd422(DevObj):
         ret = {}
         for dik in DI:
             send_data = self.create_read_buf(addr, DI[dik])
-            print([hex(x) for x in send_data])
+            # print([hex(x) for x in send_data])
             sbytes = bytes()
             for i in [bytes([x]) for x in send_data]:
                 sbytes = sbytes + i
@@ -113,7 +116,7 @@ class Dtsd422(DevObj):
                     break
                 intva = ord(va)
                 rece_data.append(intva)
-            print([hex(x) for x in rece_data])
+            # print([hex(x) for x in rece_data])
             index = rece_data.index(0x68)
             if len(rece_data) < 12 or \
                     rece_data[len(rece_data) - 1] != 0x16 or \
@@ -122,28 +125,45 @@ class Dtsd422(DevObj):
                     rece_data[index + 8] != 0x91:
                 raise DevError('wrong receive date')
             data = rece_data[index:(len(rece_data) - 2)]
-            print([hex(x) for x in data])
+            # print([hex(x) for x in data])
             ret.update(self.decode(dik, data[10:]))
         return ret
 
     def decode(self, dik, buf):
         ret = {}
-        if dik == 'zxygdn':
+        if dik == 'TotalEnergy':
             valb = self.sub33(buf)
-            print(valb)
             ret = {
-                    'zxygdn': h2bcd(valb[0]) * 10000 +
+                    'TotalEnergy': h2bcd(valb[0]) * 10000 +
                     h2bcd(valb[1]) * 100 +
                     h2bcd(valb[2]) +
                     h2bcd(valb[3]) / 100
                                     }
-        if dik == 'dysjk':
+        if dik == 'Voltage':
             valb = self.sub33(buf)
-            print(valb)
             ret = {
                     'Va': int('%s' % h2bcd(valb[4:6])) / 10.0,
                     'Vb': int('%s' % h2bcd(valb[2:4])) / 10.0,
                     'Vc': int('%s' % h2bcd(valb[0:2])) / 10.0
+                   }
+        if dik == 'Current':
+            valb = self.sub33(buf)
+            ret = {
+                    'Ia': int('%s' % h2bcd(valb[6:9])) / 1000.0,
+                    'Ib': int('%s' % h2bcd(valb[3:6])) / 1000.0,
+                    'Ic': int('%s' % h2bcd(valb[0:3])) / 1000.0
+                   }
+        if dik == 'InstantActivePower':
+            valb = self.sub33(buf)
+            ret = {
+                    'TotalInstantActivePower':
+                    int('%s' % h2bcd(valb[9:12])) / 1000.0,
+                    'InstantActivePower_a':
+                    int('%s' % h2bcd(valb[6:9])) / 1000.0,
+                    'InstantActivePower_b':
+                    int('%s' % h2bcd(valb[3:6])) / 1000.0,
+                    'InstantActivePower_c':
+                    int('%s' % h2bcd(valb[0:3])) / 1000.0
                    }
         return ret
 
@@ -152,10 +172,10 @@ class Dtsd422(DevObj):
         return ret
 
 
-DynApp.registerdev(DynApp, 'dtsd422')(Dtsd422)
+DynApp.registerdev(DynApp, 'DTL645_07')(DTL645_07)
 
 if __name__ == '__main__':
-    mydev = Dtsd422()
+    mydev = DTL645_07()
     amm_addr = '3300027014'
 
     try:
