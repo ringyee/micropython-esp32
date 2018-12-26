@@ -13,7 +13,6 @@ import ujson
 from device.base import DynApp
 
 TestDevice = DynApp()
-TestDevice.load_drive()
 addr = '3300027014'
 
 try:

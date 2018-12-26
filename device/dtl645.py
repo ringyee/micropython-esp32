@@ -44,6 +44,7 @@ def chsum(cl):
     return chsum
 
 
+@DynApp.registerdev(DynApp, 'DTL645_07')
 class DTL645_07(DevObj):
     def __init__(self):
         self.set_config()
@@ -167,12 +168,11 @@ class DTL645_07(DevObj):
                    }
         return ret
 
-    def write_init_data(self, ser, addr, var_value):  # 0x6A78
+    def write_init_data(self, ser, addr, var_value):
         ret = None
+        # do write operat device ...
         return ret
 
-
-DynApp.registerdev(DynApp, 'DTL645_07')(DTL645_07)
 
 if __name__ == '__main__':
     mydev = DTL645_07()
@@ -182,7 +182,3 @@ if __name__ == '__main__':
         print(mydev.read_dev_value(amm_addr))
     except Exception as e:
         print(e)
-# #    ser.close()
-#     sh = logging.StreamHandler()
-#     sh.setLevel(10)
-#     _log.addHandler(sh)

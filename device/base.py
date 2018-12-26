@@ -9,9 +9,11 @@
 
 """
 import utime
+import time
 import sys
 import os
 import machine
+import network
 sys.path.append('..')
 # sys.path.append(os.path.abspath(os.path.dirname(__file__)))
 
@@ -65,6 +67,10 @@ class DynApp(object):
     for pt in [1, 2]:
         serstat[pt] = 0
 
+    def __init__(self):
+        self.load_drive()
+        self.connect()
+
     @staticmethod
     def registerdev(app, devname):
         def call(cls):
@@ -83,6 +89,18 @@ class DynApp(object):
             except Exception:
                 print("import drive error")
                 #  print sys.exc_info()[1]
+
+    def connect(self, ssid='things3', passwd='thingspower3'):
+        self.wlan = network.WLAN(network.STA_IF)
+        self.wlan.active(True)
+        while True:
+            if self.wlan.isconnected():
+                time.sleep(1)
+                print(self.wlan.ifconfig())
+                break
+            else:
+                self.wlan.connect(ssid, passwd)
+                time.sleep(1)
 
 
 class DevObj(object):
@@ -164,8 +182,8 @@ class DevObj(object):
                     raise 'wrong data:%s' % var_name
         except Exception as e:
             ret = e.message
-        if ser != 0 and ser.isOpen():
-            ser.deinit()
+        # if ser != 0 and ser.isOpen():
+            # ser.deinit()
         DynApp.serstat[port] = 0
         return ret
 
